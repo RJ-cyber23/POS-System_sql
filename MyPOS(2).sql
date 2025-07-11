@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 10, 2025 at 09:30 AM
+-- Generation Time: Jul 11, 2025 at 07:09 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -108,26 +108,32 @@ INSERT INTO `Customers` (`customer_id`, `customer_code`, `customer_name`, `conta
 -- --------------------------------------------------------
 
 --
--- Table structure for table `Inventories`
+-- Stand-in structure for view `End_Of_Day_Summary`
+-- (See below for the actual view)
 --
-
-CREATE TABLE `Inventories` (
-  `inventory_id` int(11) NOT NULL,
-  `variant_id` int(11) DEFAULT NULL,
-  `quantity_on_hand` int(11) DEFAULT NULL,
-  `reorder_level` int(11) DEFAULT NULL,
-  `last_restock_date` date DEFAULT NULL,
-  `create_at` datetime DEFAULT current_timestamp(),
-  `update_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `End_Of_Day_Summary` (
+`invoice_date` date
+,`total_transactions` bigint(21)
+,`total_items_sold` decimal(32,0)
+,`total_sales` decimal(42,2)
+,`total_cash` decimal(32,2)
+);
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `InventoryStockSummary`
+-- Stand-in structure for view `Inventory_Status`
 -- (See below for the actual view)
 --
-CREATE TABLE `InventoryStockSummary` (
+CREATE TABLE `Inventory_Status` (
+`product_id` int(11)
+,`product_name` varchar(100)
+,`size` varchar(20)
+,`color` varchar(100)
+,`quantity_stock_in` decimal(32,0)
+,`sales_stock_out` decimal(32,0)
+,`quantity_on_hand` decimal(33,0)
+,`last_restock_date` date
 );
 
 -- --------------------------------------------------------
@@ -137,11 +143,6 @@ CREATE TABLE `InventoryStockSummary` (
 -- (See below for the actual view)
 --
 CREATE TABLE `InvoiceCalculatedTotals` (
-`invoice_id` int(11)
-,`invoice_date` date
-,`amount_tendered` decimal(10,2)
-,`calculated_total_amount` decimal(42,2)
-,`calculated_change_amount` decimal(43,2)
 );
 
 -- --------------------------------------------------------
@@ -173,21 +174,18 @@ INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `total_amou
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `MyInvoiceTotalSales`
+-- Stand-in structure for view `Invoices_Total_Sales`
 -- (See below for the actual view)
 --
-CREATE TABLE `MyInvoiceTotalSales` (
+CREATE TABLE `Invoices_Total_Sales` (
 `invoice_id` int(11)
 ,`invoice_date` date
 ,`customer_name` varchar(50)
 ,`username` varchar(225)
-,`product_id` int(11)
-,`product_name` varchar(100)
-,`subtotal` decimal(20,2)
-,`Calcu_total_amount` decimal(42,2)
+,`calculated_total_amount` decimal(42,2)
 ,`total_paid` decimal(32,2)
-,`Balance_status` decimal(43,2)
-,`Payment_status` varchar(7)
+,`balance` decimal(43,2)
+,`payment_status` varchar(7)
 );
 
 -- --------------------------------------------------------
@@ -223,7 +221,6 @@ CREATE TABLE `Payments` (
   `payment_method_id` int(11) DEFAULT NULL,
   `bank_id` int(11) DEFAULT NULL,
   `amount` decimal(10,2) DEFAULT NULL,
-  `transaction_id` varchar(225) DEFAULT NULL,
   `payment_date` datetime DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -232,16 +229,22 @@ CREATE TABLE `Payments` (
 -- Dumping data for table `Payments`
 --
 
-INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_id`, `amount`, `transaction_id`, `payment_date`, `user_id`) VALUES
-(1, 1, 1, 1, 100.00, NULL, '2025-07-10 10:15:54', 1);
+INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_id`, `amount`, `payment_date`, `user_id`) VALUES
+(1, 1, 1, 1, 100.00, '2025-07-10 10:15:54', 1);
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `ProductProfitTotal_Bio`
+-- Stand-in structure for view `Payment_Breakdown`
 -- (See below for the actual view)
 --
-CREATE TABLE `ProductProfitTotal_Bio` (
+CREATE TABLE `Payment_Breakdown` (
+`invoice_id` int(11)
+,`customer_name` varchar(50)
+,`payment_method_id` int(11)
+,`amount` decimal(10,2)
+,`payment_date` datetime
+,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
@@ -257,6 +260,7 @@ CREATE TABLE `Products` (
   `description` text DEFAULT NULL,
   `category_id` int(11) DEFAULT NULL,
   `brand_id` int(11) DEFAULT NULL,
+  `supplier_id` int(11) DEFAULT NULL,
   `create_at` datetime DEFAULT current_timestamp(),
   `update_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -265,9 +269,9 @@ CREATE TABLE `Products` (
 -- Dumping data for table `Products`
 --
 
-INSERT INTO `Products` (`product_id`, `product_code`, `product_name`, `description`, `category_id`, `brand_id`, `create_at`, `update_at`) VALUES
-(1, 1001, 'Pen', 'yohoo', 1, 1, '2025-07-09 09:15:21', '2025-07-09 09:17:32'),
-(2, 1002, 'bolalo', 'food', 2, 2, '2025-07-10 14:58:37', '2025-07-10 15:02:27');
+INSERT INTO `Products` (`product_id`, `product_code`, `product_name`, `description`, `category_id`, `brand_id`, `supplier_id`, `create_at`, `update_at`) VALUES
+(1, 1001, 'Pen', 'yohoo', 1, 1, 1, '2025-07-09 09:15:21', '2025-07-11 11:18:15'),
+(2, 1002, 'bolalo', 'food', 2, 2, 1, '2025-07-10 14:58:37', '2025-07-11 11:18:23');
 
 -- --------------------------------------------------------
 
@@ -295,6 +299,24 @@ CREATE TABLE `ProductVariants` (
 INSERT INTO `ProductVariants` (`variant_id`, `product_id`, `size`, `weight`, `color`, `unit_id`, `base_price`, `cost_price`, `create_at`, `update_at`) VALUES
 (1, 1, 'small', '0.6kg', 'red', 1, 8.00, 2.00, '2025-07-09 09:19:00', '2025-07-09 09:20:35'),
 (2, 2, 'large', '0.12kl', 'red', 1, 15.00, 8.00, '2025-07-10 15:00:04', '2025-07-10 15:00:04');
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `Profit_For_Product`
+-- (See below for the actual view)
+--
+CREATE TABLE `Profit_For_Product` (
+`product_id` int(11)
+,`product_name` varchar(100)
+,`cost_price` decimal(10,2)
+,`base_price` decimal(10,2)
+,`ordered_quantity` int(11)
+,`sold_quantity` decimal(32,0)
+,`total_cost` decimal(20,2)
+,`expected_sales` decimal(42,2)
+,`total_profit` decimal(43,2)
+);
 
 -- --------------------------------------------------------
 
@@ -347,19 +369,17 @@ INSERT INTO `PurchaseOrders` (`Purchase_Orders_id`, `supplier_id`, `order_date`,
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `PurchaseTotal`
+-- Stand-in structure for view `Purchase_Orders_Summary`
 -- (See below for the actual view)
 --
-CREATE TABLE `PurchaseTotal` (
-);
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `ReceiveProductHistory`
--- (See below for the actual view)
---
-CREATE TABLE `ReceiveProductHistory` (
+CREATE TABLE `Purchase_Orders_Summary` (
+`Purchase_Orders_Items_id` int(11)
+,`supplier_name` varchar(50)
+,`product_name` varchar(100)
+,`ordered_quantity` int(11)
+,`unit_price` decimal(10,2)
+,`subtotal` decimal(20,2)
+,`order_date` date
 );
 
 -- --------------------------------------------------------
@@ -408,18 +428,23 @@ CREATE TABLE `Sales` (
 --
 
 INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `unit_price`, `create_at`, `update_at`) VALUES
-(1, 1, 1, 2, 8.00, '2025-07-10 10:26:59', '2025-07-10 10:29:56');
+(1, 1, 1, 2, 8.00, '2025-07-10 10:26:59', '2025-07-10 10:29:56'),
+(2, 1, 2, 20, 8.00, '2025-07-11 09:58:06', '2025-07-11 09:58:06');
 
 -- --------------------------------------------------------
 
 --
--- Stand-in structure for view `SalesLineItemCalculatedTotals`
+-- Stand-in structure for view `Sales_Summary`
 -- (See below for the actual view)
 --
-CREATE TABLE `SalesLineItemCalculatedTotals` (
+CREATE TABLE `Sales_Summary` (
 `invoice_id` int(11)
-,`sales_id` int(11)
-,`calculated_sub_total` decimal(20,2)
+,`invoice_date` date
+,`product_name` varchar(100)
+,`quantity` int(11)
+,`unit_price` decimal(10,2)
+,`subtotal` decimal(20,2)
+,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
@@ -505,11 +530,20 @@ INSERT INTO `Users` (`user_id`, `username`, `password_hash`, `fullname`, `contac
 -- --------------------------------------------------------
 
 --
--- Structure for view `InventoryStockSummary`
+-- Structure for view `End_Of_Day_Summary`
 --
-DROP TABLE IF EXISTS `InventoryStockSummary`;
+DROP TABLE IF EXISTS `End_Of_Day_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `InventoryStockSummary`  AS SELECT `pv`.`variant_id` AS `variant_id`, `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`size` AS `size`, `pv`.`color` AS `color`, sum(`rp`.`quantity`) AS `total_received` FROM ((`ReceiveProducts` `rp` join `ProductVariants` `pv` on(`pv`.`variant_id` = `rp`.`variant_id`)) join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) GROUP BY `pv`.`variant_id` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `End_Of_Day_Summary`  AS SELECT `i`.`invoice_date` AS `invoice_date`, count(distinct `i`.`invoice_id`) AS `total_transactions`, coalesce(sum(`s`.`quantity`),0) AS `total_items_sold`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) AS `total_sales`, coalesce(sum(`p`.`amount`),0) AS `total_cash` FROM ((`Invoices` `i` left join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) left join `Payments` `p` on(`p`.`invoice_id` = `i`.`invoice_id`)) GROUP BY `i`.`invoice_date` ;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `Inventory_Status`
+--
+DROP TABLE IF EXISTS `Inventory_Status`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Inventory_Status`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`size` AS `size`, `pv`.`color` AS `color`, coalesce(sum(`rp`.`quantity`),0) AS `quantity_stock_in`, coalesce(sum(`s`.`quantity`),0) AS `sales_stock_out`, coalesce(sum(`rp`.`quantity`),0) - coalesce(sum(`s`.`quantity`),0) AS `quantity_on_hand`, max(`rp`.`received_date`) AS `last_restock_date` FROM (((`Products` `p` join `ProductVariants` `pv` on(`p`.`product_id` = `pv`.`product_id`)) left join `ReceiveProducts` `rp` on(`rp`.`product_id` = `pv`.`variant_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id`, `pv`.`size`, `pv`.`color` ;
 
 -- --------------------------------------------------------
 
@@ -523,47 +557,47 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 -- --------------------------------------------------------
 
 --
--- Structure for view `MyInvoiceTotalSales`
+-- Structure for view `Invoices_Total_Sales`
 --
-DROP TABLE IF EXISTS `MyInvoiceTotalSales`;
+DROP TABLE IF EXISTS `Invoices_Total_Sales`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `MyInvoiceTotalSales`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, `pr`.`product_id` AS `product_id`, `pr`.`product_name` AS `product_name`, `s`.`unit_price`* `s`.`quantity` AS `subtotal`, (select sum(`s2`.`unit_price` * `s2`.`quantity`) from `Sales` `s2` where `s2`.`sales_id` = `i`.`invoice_id`) AS `Calcu_total_amount`, (select sum(`p`.`amount`) from `Payments` `p` where `p`.`payment_id` = `i`.`invoice_id`) AS `total_paid`, (select sum(`s2`.`unit_price` * `s2`.`quantity`) from `Sales` `s2` where `s2`.`sales_id` = `i`.`invoice_id`) - (select sum(`p`.`amount`) from `Payments` `p` where `p`.`payment_id` = `i`.`invoice_id`) AS `Balance_status`, CASE WHEN (select coalesce(sum(`p`.`amount`),0) from `Payments` `p` where `p`.`payment_id` = `i`.`invoice_id`) >= (select coalesce(sum(`s2`.`unit_price` * `s2`.`quantity`),0) from `Sales` `s2` where `s2`.`sales_id` = `i`.`invoice_id`) THEN 'paid' WHEN (select coalesce(sum(`p`.`amount`),0) from `Payments` `p` where `p`.`payment_id` = `i`.`invoice_id`) > 0 THEN 'Partial' ELSE 'Unpaid' END AS `Payment_status` FROM (((((`Invoices` `i` join `ProductVariants` `pv` on(`pv`.`variant_id` = `i`.`invoice_id`)) join `Products` `pr` on(`pr`.`product_id` = `pv`.`variant_id`)) join `Sales` `s` on(`s`.`sales_id` = `i`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Invoices_Total_Sales`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) AS `calculated_total_amount`, coalesce(sum(`p`.`amount`),0) AS `total_paid`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) - coalesce(sum(`p`.`amount`),0) AS `balance`, CASE WHEN coalesce(sum(`p`.`amount`),0) >= coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) THEN 'Paid' WHEN coalesce(sum(`p`.`amount`),0) > 0 THEN 'Partial' ELSE 'Unpaid' END AS `payment_status` FROM ((((`Invoices` `i` join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) left join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) left join `Payments` `p` on(`p`.`invoice_id` = `i`.`invoice_id`)) GROUP BY `i`.`invoice_id` ;
 
 -- --------------------------------------------------------
 
 --
--- Structure for view `ProductProfitTotal_Bio`
+-- Structure for view `Payment_Breakdown`
 --
-DROP TABLE IF EXISTS `ProductProfitTotal_Bio`;
+DROP TABLE IF EXISTS `Payment_Breakdown`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `ProductProfitTotal_Bio`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`base_price` AS `base_price`, `poi`.`unit_price` AS `unit_price`, `poi`.`ordered_quantity` AS `ordered_quantity`, `pv`.`base_price`* `poi`.`unit_price` AS `Subtotal`, `pv`.`base_price`* `poi`.`ordered_quantity` AS `Expected_Sales`, `pv`.`base_price`* `poi`.`ordered_quantity` - `pv`.`base_price` * `poi`.`unit_price` AS `Total_Profit` FROM ((`PurchaseOrderItems` `poi` left join `ProductVariants` `pv` on(`poi`.`variant_id` = `pv`.`variant_id`)) left join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Payment_Breakdown`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `c`.`customer_name` AS `customer_name`, `p`.`payment_method_id` AS `payment_method_id`, `p`.`amount` AS `amount`, `p`.`payment_date` AS `payment_date`, `u`.`username` AS `username` FROM (((`Invoices` `i` join `Customers` `c` on(`i`.`customer_id` = `c`.`customer_id`)) join `Payments` `p` on(`p`.`payment_id` = `i`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
 
 -- --------------------------------------------------------
 
 --
--- Structure for view `PurchaseTotal`
+-- Structure for view `Profit_For_Product`
 --
-DROP TABLE IF EXISTS `PurchaseTotal`;
+DROP TABLE IF EXISTS `Profit_For_Product`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `PurchaseTotal`  AS SELECT `poi`.`Purchase_Orders_id` AS `Purchase_Orders_id`, `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `poi`.`ordered_quantity` AS `ordered_quantity`, `poi`.`unit_price` AS `unit_price`, `poi`.`ordered_quantity`* `poi`.`unit_price` AS `SubTotal`, (select sum(`poi2`.`ordered_quantity` * `poi2`.`unit_price`) from `PurchaseOrderItems` `poi2` where `poi2`.`Purchase_Orders_id` = `poi`.`Purchase_Orders_id`) AS `Total_Amount` FROM ((`PurchaseOrderItems` `poi` left join `ProductVariants` `pv` on(`poi`.`variant_id` = `pv`.`variant_id`)) left join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Profit_For_Product`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`cost_price` AS `cost_price`, `pv`.`base_price` AS `base_price`, `po`.`ordered_quantity` AS `ordered_quantity`, sum(coalesce(`s`.`quantity`,0)) AS `sold_quantity`, `pv`.`cost_price`* `po`.`ordered_quantity` AS `total_cost`, `pv`.`base_price`* sum(coalesce(`s`.`quantity`,0)) AS `expected_sales`, `pv`.`base_price`* sum(coalesce(`s`.`quantity`,0)) - `pv`.`cost_price` * `po`.`ordered_quantity` AS `total_profit` FROM (((`Products` `p` join `ProductVariants` `pv` on(`p`.`product_id` = `pv`.`product_id`)) left join `PurchaseOrderItems` `po` on(`po`.`product_id` = `pv`.`variant_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id` ;
 
 -- --------------------------------------------------------
 
 --
--- Structure for view `ReceiveProductHistory`
+-- Structure for view `Purchase_Orders_Summary`
 --
-DROP TABLE IF EXISTS `ReceiveProductHistory`;
+DROP TABLE IF EXISTS `Purchase_Orders_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `ReceiveProductHistory`  AS SELECT `rp`.`receive_product_id` AS `RP_id`, `rp`.`received_date` AS `received_date`, `s`.`supplier_name` AS `supplier_name`, `p`.`product_name` AS `product_name`, `pv`.`size` AS `size`, `pv`.`color` AS `color`, `rp`.`quantity` AS `quantity`, `rp`.`unit_price` AS `unit_price`, `u`.`username` AS `received_by` FROM ((((`ReceiveProducts` `rp` left join `ProductVariants` `pv` on(`rp`.`variant_id` = `pv`.`variant_id`)) left join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) left join `Suppliers` `s` on(`s`.`supplier_id` = `s`.`supplier_id`)) left join `Users` `u` on(`u`.`user_id` = `u`.`user_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Purchase_Orders_Summary`  AS SELECT `poi`.`Purchase_Orders_Items_id` AS `Purchase_Orders_Items_id`, `s`.`supplier_name` AS `supplier_name`, `p`.`product_name` AS `product_name`, `poi`.`ordered_quantity` AS `ordered_quantity`, `poi`.`unit_price` AS `unit_price`, `poi`.`ordered_quantity`* `poi`.`unit_price` AS `subtotal`, `po`.`order_date` AS `order_date` FROM (((`PurchaseOrderItems` `poi` join `Suppliers` `s` on(`s`.`supplier_id` = `poi`.`Purchase_Orders_Items_id`)) join `Products` `p` on(`p`.`product_id` = `poi`.`Purchase_Orders_Items_id`)) join `PurchaseOrders` `po` on(`po`.`Purchase_Orders_id` = `poi`.`Purchase_Orders_Items_id`)) ;
 
 -- --------------------------------------------------------
 
 --
--- Structure for view `SalesLineItemCalculatedTotals`
+-- Structure for view `Sales_Summary`
 --
-DROP TABLE IF EXISTS `SalesLineItemCalculatedTotals`;
+DROP TABLE IF EXISTS `Sales_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `SalesLineItemCalculatedTotals`  AS SELECT `s`.`invoice_id` AS `invoice_id`, `s`.`sales_id` AS `sales_id`, `s`.`quantity`* `s`.`unit_price` AS `calculated_sub_total` FROM `Sales` AS `s` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Sales_Summary`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `p`.`product_name` AS `product_name`, `s`.`quantity` AS `quantity`, `s`.`unit_price` AS `unit_price`, `s`.`quantity`* `s`.`unit_price` AS `subtotal`, `u`.`username` AS `username` FROM (((`Sales` `s` join `Products` `p` on(`s`.`product_id` = `p`.`product_id`)) join `Invoices` `i` on(`i`.`invoice_id` = `s`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `s`.`sales_id`)) ;
 
 --
 -- Indexes for dumped tables
@@ -592,13 +626,6 @@ ALTER TABLE `Categories`
 --
 ALTER TABLE `Customers`
   ADD PRIMARY KEY (`customer_id`);
-
---
--- Indexes for table `Inventories`
---
-ALTER TABLE `Inventories`
-  ADD PRIMARY KEY (`inventory_id`),
-  ADD KEY `variant_id` (`variant_id`);
 
 --
 -- Indexes for table `Invoices`
@@ -630,7 +657,8 @@ ALTER TABLE `Payments`
 ALTER TABLE `Products`
   ADD PRIMARY KEY (`product_id`),
   ADD KEY `brand_id` (`brand_id`),
-  ADD KEY `category_id` (`category_id`);
+  ADD KEY `category_id` (`category_id`),
+  ADD KEY `supplier_id` (`supplier_id`);
 
 --
 -- Indexes for table `ProductVariants`
@@ -723,12 +751,6 @@ ALTER TABLE `Customers`
   MODIFY `customer_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `Inventories`
---
-ALTER TABLE `Inventories`
-  MODIFY `inventory_id` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `Invoices`
 --
 ALTER TABLE `Invoices`
@@ -762,7 +784,7 @@ ALTER TABLE `ReceiveProducts`
 -- AUTO_INCREMENT for table `Sales`
 --
 ALTER TABLE `Sales`
-  MODIFY `sales_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `sales_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `Suppliers`
@@ -787,12 +809,6 @@ ALTER TABLE `Users`
 --
 
 --
--- Constraints for table `Inventories`
---
-ALTER TABLE `Inventories`
-  ADD CONSTRAINT `Inventories_ibfk_1` FOREIGN KEY (`variant_id`) REFERENCES `ProductVariants` (`variant_id`);
-
---
 -- Constraints for table `Invoices`
 --
 ALTER TABLE `Invoices`
@@ -813,7 +829,8 @@ ALTER TABLE `Payments`
 --
 ALTER TABLE `Products`
   ADD CONSTRAINT `Products_ibfk_1` FOREIGN KEY (`brand_id`) REFERENCES `Brand` (`brand_id`),
-  ADD CONSTRAINT `Products_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`);
+  ADD CONSTRAINT `Products_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `Categories` (`category_id`),
+  ADD CONSTRAINT `Products_ibfk_3` FOREIGN KEY (`supplier_id`) REFERENCES `Suppliers` (`supplier_id`);
 
 --
 -- Constraints for table `ProductVariants`
