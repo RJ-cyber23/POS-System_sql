@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 12, 2025 at 08:01 AM
+-- Generation Time: Jul 12, 2025 at 12:31 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -112,6 +112,12 @@ INSERT INTO `Customers` (`customer_id`, `customer_name`, `customer_code`, `conta
 -- (See below for the actual view)
 --
 CREATE TABLE `End_Of_Day_Summary` (
+`invoice_date` date
+,`total_sales` decimal(42,2)
+,`total_transaction` bigint(21)
+,`total_items_sold` decimal(32,0)
+,`total_cash` decimal(32,2)
+,`total_profit` decimal(43,2)
 );
 
 -- --------------------------------------------------------
@@ -163,7 +169,7 @@ CREATE TABLE `Invoices` (
 --
 
 INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `user_id`, `amount_tendered`, `change_amount`, `status`, `create_at`, `update_at`) VALUES
-(1, 1, '2025-07-10', 1, 100.00, NULL, 'Paid', '2025-07-10 10:15:28', '2025-07-10 10:15:28');
+(1, 1, '2025-07-10', 1, 100.00, NULL, 'Paid', '2025-07-10 10:15:28', '2025-07-12 14:19:35');
 
 -- --------------------------------------------------------
 
@@ -172,6 +178,15 @@ INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `user_id`, 
 -- (See below for the actual view)
 --
 CREATE TABLE `Invoices_Total_Sales` (
+`sales_id` int(11)
+,`invoice_id` int(11)
+,`invoice_date` date
+,`customer_name` varchar(50)
+,`username` varchar(225)
+,`calculated_total_amount` decimal(20,2)
+,`total_paid` decimal(10,2)
+,`balance` decimal(21,2)
+,`Payment_Status` varchar(7)
 );
 
 -- --------------------------------------------------------
@@ -224,6 +239,12 @@ INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_i
 -- (See below for the actual view)
 --
 CREATE TABLE `Payment_Breakdown` (
+`invoice_id` int(11)
+,`customer_name` varchar(50)
+,`payment_method_id` int(11)
+,`amount_paid` decimal(10,2)
+,`payment_date` datetime
+,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
@@ -307,7 +328,7 @@ CREATE TABLE `PurchaseOrderItems` (
   `Purchase_Orders_Items_id` int(11) NOT NULL,
   `product_id` int(11) DEFAULT NULL,
   `ordered_quantity` int(11) DEFAULT NULL,
-  `unit_price` decimal(10,2) DEFAULT NULL,
+  `cost_price` int(11) DEFAULT NULL,
   `received_quantity` int(11) DEFAULT NULL,
   `Purchase_Orders_id` int(11) DEFAULT NULL,
   `create_at` datetime DEFAULT current_timestamp(),
@@ -318,9 +339,9 @@ CREATE TABLE `PurchaseOrderItems` (
 -- Dumping data for table `PurchaseOrderItems`
 --
 
-INSERT INTO `PurchaseOrderItems` (`Purchase_Orders_Items_id`, `product_id`, `ordered_quantity`, `unit_price`, `received_quantity`, `Purchase_Orders_id`, `create_at`, `update_at`) VALUES
-(1, 1, 20, 2.00, 20, 1, '2025-07-09 09:21:55', '2025-07-10 15:16:39'),
-(2, 2, 20, 8.00, 20, 1002, '2025-07-10 15:06:03', '2025-07-10 15:17:50');
+INSERT INTO `PurchaseOrderItems` (`Purchase_Orders_Items_id`, `product_id`, `ordered_quantity`, `cost_price`, `received_quantity`, `Purchase_Orders_id`, `create_at`, `update_at`) VALUES
+(1, 1, 20, 2, 20, 1, '2025-07-09 09:21:55', '2025-07-10 15:16:39'),
+(2, 2, 20, 8, 20, 1002, '2025-07-10 15:06:03', '2025-07-10 15:17:50');
 
 -- --------------------------------------------------------
 
@@ -356,9 +377,10 @@ CREATE TABLE `Purchase_Orders_Summary` (
 ,`supplier_name` varchar(50)
 ,`product_name` varchar(100)
 ,`ordered_quantity` int(11)
-,`unit_price` decimal(10,2)
-,`subtotal` decimal(20,2)
+,`cost_price` int(11)
+,`Subtotal` bigint(21)
 ,`order_date` date
+,`status` enum('Recieved','Process')
 );
 
 -- --------------------------------------------------------
@@ -398,16 +420,17 @@ CREATE TABLE `Sales` (
   `product_id` int(11) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
   `create_at` datetime DEFAULT current_timestamp(),
-  `update_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `update_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `variant_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
 
 --
 -- Dumping data for table `Sales`
 --
 
-INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `create_at`, `update_at`) VALUES
-(1, 1, 1, 2, '2025-07-10 10:26:59', '2025-07-10 10:29:56'),
-(2, 1, 2, 20, '2025-07-11 09:58:06', '2025-07-11 09:58:06');
+INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `create_at`, `update_at`, `variant_id`) VALUES
+(1, 1, 1, 2, '2025-07-10 10:26:59', '2025-07-12 15:57:59', 1),
+(2, 1, 2, 20, '2025-07-11 09:58:06', '2025-07-12 15:58:05', 2);
 
 -- --------------------------------------------------------
 
@@ -416,6 +439,14 @@ INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `create
 -- (See below for the actual view)
 --
 CREATE TABLE `Sales_Summary` (
+`sales_id` int(11)
+,`invoice_id` int(11)
+,`invoice_date` date
+,`product_name` varchar(100)
+,`quantity` int(11)
+,`base_price` decimal(10,2)
+,`Subtotal` decimal(20,2)
+,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
@@ -505,7 +536,7 @@ INSERT INTO `Users` (`user_id`, `username`, `password_hash`, `fullname`, `contac
 --
 DROP TABLE IF EXISTS `End_Of_Day_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `End_Of_Day_Summary`  AS SELECT `i`.`invoice_date` AS `invoice_date`, count(distinct `i`.`invoice_id`) AS `total_transactions`, coalesce(sum(`s`.`quantity`),0) AS `total_items_sold`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) AS `total_sales`, coalesce(sum(`p`.`amount`),0) AS `total_cash` FROM ((`Invoices` `i` left join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) left join `Payments` `p` on(`p`.`invoice_id` = `i`.`invoice_id`)) GROUP BY `i`.`invoice_date` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `End_Of_Day_Summary`  AS SELECT `i`.`invoice_date` AS `invoice_date`, sum(`s`.`quantity` * `p`.`cost_price`) AS `total_sales`, count(distinct `i`.`invoice_id`) AS `total_transaction`, sum(`s`.`quantity`) AS `total_items_sold`, sum(`i`.`amount_tendered`) AS `total_cash`, sum(`s`.`quantity` * `p`.`cost_price`) - `s`.`quantity` AS `total_profit` FROM ((`Invoices` `i` join `Sales` `s` on(`i`.`invoice_id` = `s`.`invoice_id`)) join `ProductVariants` `p` on(`p`.`product_id` = `s`.`product_id`)) ;
 
 -- --------------------------------------------------------
 
@@ -532,7 +563,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Invoices_Total_Sales`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Invoices_Total_Sales`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) AS `calculated_total_amount`, coalesce(sum(`p`.`amount`),0) AS `total_paid`, coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) - coalesce(sum(`p`.`amount`),0) AS `balance`, CASE WHEN coalesce(sum(`p`.`amount`),0) >= coalesce(sum(`s`.`quantity` * `s`.`unit_price`),0) THEN 'Paid' WHEN coalesce(sum(`p`.`amount`),0) > 0 THEN 'Partial' ELSE 'Unpaid' END AS `payment_status` FROM ((((`Invoices` `i` join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) left join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) left join `Payments` `p` on(`p`.`invoice_id` = `i`.`invoice_id`)) GROUP BY `i`.`invoice_id` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Invoices_Total_Sales`  AS SELECT `s`.`sales_id` AS `sales_id`, `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, `s`.`quantity`* `pv`.`base_price` AS `calculated_total_amount`, `i`.`amount_tendered` AS `total_paid`, `s`.`quantity`* `pv`.`base_price` - `i`.`amount_tendered` AS `balance`, CASE WHEN `i`.`amount_tendered` >= `s`.`quantity` * `pv`.`base_price` THEN 'Paid' WHEN `i`.`amount_tendered` > 0 THEN 'Partial' ELSE 'Unpaid' END AS `Payment_Status` FROM (((((`Invoices` `i` join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) join `ProductVariants` `pv` on(`s`.`variant_id` = `pv`.`variant_id`)) join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
 
 -- --------------------------------------------------------
 
@@ -541,7 +572,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Payment_Breakdown`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Payment_Breakdown`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `c`.`customer_name` AS `customer_name`, `p`.`payment_method_id` AS `payment_method_id`, `p`.`amount` AS `amount`, `p`.`payment_date` AS `payment_date`, `u`.`username` AS `username` FROM (((`Invoices` `i` join `Customers` `c` on(`i`.`customer_id` = `c`.`customer_id`)) join `Payments` `p` on(`p`.`payment_id` = `i`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Payment_Breakdown`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `c`.`customer_name` AS `customer_name`, `p`.`payment_method_id` AS `payment_method_id`, `i`.`amount_tendered` AS `amount_paid`, `p`.`payment_date` AS `payment_date`, `u`.`username` AS `username` FROM (((`Invoices` `i` join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Payments` `p` on(`p`.`invoice_id` = `i`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
 
 -- --------------------------------------------------------
 
@@ -559,7 +590,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Purchase_Orders_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Purchase_Orders_Summary`  AS SELECT `poi`.`Purchase_Orders_Items_id` AS `Purchase_Orders_Items_id`, `s`.`supplier_name` AS `supplier_name`, `p`.`product_name` AS `product_name`, `poi`.`ordered_quantity` AS `ordered_quantity`, `poi`.`unit_price` AS `unit_price`, `poi`.`ordered_quantity`* `poi`.`unit_price` AS `subtotal`, `po`.`order_date` AS `order_date` FROM (((`PurchaseOrderItems` `poi` join `Suppliers` `s` on(`s`.`supplier_id` = `poi`.`Purchase_Orders_Items_id`)) join `Products` `p` on(`p`.`product_id` = `poi`.`Purchase_Orders_Items_id`)) join `PurchaseOrders` `po` on(`po`.`Purchase_Orders_id` = `poi`.`Purchase_Orders_Items_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Purchase_Orders_Summary`  AS SELECT `poi`.`Purchase_Orders_Items_id` AS `Purchase_Orders_Items_id`, `s`.`supplier_name` AS `supplier_name`, `p`.`product_name` AS `product_name`, `poi`.`ordered_quantity` AS `ordered_quantity`, `poi`.`cost_price` AS `cost_price`, `poi`.`ordered_quantity`* `poi`.`cost_price` AS `Subtotal`, `po`.`order_date` AS `order_date`, `po`.`status` AS `status` FROM (((`PurchaseOrderItems` `poi` join `Products` `p` on(`poi`.`product_id` = `p`.`product_id`)) join `PurchaseOrders` `po` on(`po`.`Purchase_Orders_id` = `poi`.`Purchase_Orders_id`)) join `Suppliers` `s` on(`s`.`supplier_id` = `po`.`supplier_id`)) ;
 
 -- --------------------------------------------------------
 
@@ -568,7 +599,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Sales_Summary`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Sales_Summary`  AS SELECT `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `p`.`product_name` AS `product_name`, `s`.`quantity` AS `quantity`, `s`.`unit_price` AS `unit_price`, `s`.`quantity`* `s`.`unit_price` AS `subtotal`, `u`.`username` AS `username` FROM (((`Sales` `s` join `Products` `p` on(`s`.`product_id` = `p`.`product_id`)) join `Invoices` `i` on(`i`.`invoice_id` = `s`.`invoice_id`)) join `Users` `u` on(`u`.`user_id` = `s`.`sales_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Sales_Summary`  AS SELECT `s`.`sales_id` AS `sales_id`, `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `p`.`product_name` AS `product_name`, `s`.`quantity` AS `quantity`, `pv`.`base_price` AS `base_price`, `s`.`quantity`* `pv`.`base_price` AS `Subtotal`, `u`.`username` AS `username` FROM ((((`Sales` `s` join `Invoices` `i` on(`s`.`invoice_id` = `i`.`invoice_id`)) join `ProductVariants` `pv` on(`pv`.`variant_id` = `s`.`variant_id`)) join `Products` `p` on(`pv`.`product_id` = `p`.`product_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
 
 --
 -- Indexes for dumped tables
@@ -671,7 +702,8 @@ ALTER TABLE `ReceiveProducts`
 ALTER TABLE `Sales`
   ADD PRIMARY KEY (`sales_id`),
   ADD KEY `invoice_id` (`invoice_id`,`product_id`),
-  ADD KEY `product_id` (`product_id`);
+  ADD KEY `product_id` (`product_id`),
+  ADD KEY `variant_id` (`variant_id`);
 
 --
 -- Indexes for table `Suppliers`
@@ -836,7 +868,8 @@ ALTER TABLE `ReceiveProducts`
 --
 ALTER TABLE `Sales`
   ADD CONSTRAINT `Sales_ibfk_2` FOREIGN KEY (`invoice_id`) REFERENCES `Invoices` (`invoice_id`),
-  ADD CONSTRAINT `Sales_ibfk_4` FOREIGN KEY (`product_id`) REFERENCES `Products` (`product_id`);
+  ADD CONSTRAINT `Sales_ibfk_4` FOREIGN KEY (`product_id`) REFERENCES `Products` (`product_id`),
+  ADD CONSTRAINT `Sales_ibfk_5` FOREIGN KEY (`variant_id`) REFERENCES `ProductVariants` (`variant_id`);
 
 --
 -- Constraints for table `Users`
