@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 11, 2025 at 07:09 AM
+-- Generation Time: Jul 12, 2025 at 08:01 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -90,8 +90,8 @@ INSERT INTO `Categories` (`category_id`, `category_name`, `create_at`, `update_a
 
 CREATE TABLE `Customers` (
   `customer_id` int(11) NOT NULL,
-  `customer_code` varchar(25) NOT NULL,
   `customer_name` varchar(50) NOT NULL,
+  `customer_code` int(11) DEFAULT NULL,
   `contact` varchar(15) NOT NULL,
   `address` varchar(100) NOT NULL,
   `create_at` datetime DEFAULT current_timestamp(),
@@ -102,8 +102,8 @@ CREATE TABLE `Customers` (
 -- Dumping data for table `Customers`
 --
 
-INSERT INTO `Customers` (`customer_id`, `customer_code`, `customer_name`, `contact`, `address`, `create_at`, `update_at`) VALUES
-(1, '1100', 'Elong mass', '123', 'star link', '2025-07-10 10:11:30', '2025-07-10 10:11:30');
+INSERT INTO `Customers` (`customer_id`, `customer_name`, `customer_code`, `contact`, `address`, `create_at`, `update_at`) VALUES
+(1, 'Elong mass', 1100, '123', 'star link', '2025-07-10 10:11:30', '2025-07-10 10:11:30');
 
 -- --------------------------------------------------------
 
@@ -112,11 +112,6 @@ INSERT INTO `Customers` (`customer_id`, `customer_code`, `customer_name`, `conta
 -- (See below for the actual view)
 --
 CREATE TABLE `End_Of_Day_Summary` (
-`invoice_date` date
-,`total_transactions` bigint(21)
-,`total_items_sold` decimal(32,0)
-,`total_sales` decimal(42,2)
-,`total_cash` decimal(32,2)
 );
 
 -- --------------------------------------------------------
@@ -155,7 +150,6 @@ CREATE TABLE `Invoices` (
   `invoice_id` int(11) NOT NULL,
   `customer_id` int(11) NOT NULL,
   `invoice_date` date DEFAULT NULL,
-  `total_amount` decimal(10,2) DEFAULT NULL,
   `user_id` int(11) NOT NULL,
   `amount_tendered` decimal(10,2) DEFAULT NULL,
   `change_amount` decimal(10,2) DEFAULT NULL,
@@ -168,8 +162,8 @@ CREATE TABLE `Invoices` (
 -- Dumping data for table `Invoices`
 --
 
-INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `total_amount`, `user_id`, `amount_tendered`, `change_amount`, `status`, `create_at`, `update_at`) VALUES
-(1, 1, '2025-07-10', 100.00, 1, 100.00, NULL, 'Paid', '2025-07-10 10:15:28', '2025-07-10 10:15:28');
+INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `user_id`, `amount_tendered`, `change_amount`, `status`, `create_at`, `update_at`) VALUES
+(1, 1, '2025-07-10', 1, 100.00, NULL, 'Paid', '2025-07-10 10:15:28', '2025-07-10 10:15:28');
 
 -- --------------------------------------------------------
 
@@ -178,14 +172,6 @@ INSERT INTO `Invoices` (`invoice_id`, `customer_id`, `invoice_date`, `total_amou
 -- (See below for the actual view)
 --
 CREATE TABLE `Invoices_Total_Sales` (
-`invoice_id` int(11)
-,`invoice_date` date
-,`customer_name` varchar(50)
-,`username` varchar(225)
-,`calculated_total_amount` decimal(42,2)
-,`total_paid` decimal(32,2)
-,`balance` decimal(43,2)
-,`payment_status` varchar(7)
 );
 
 -- --------------------------------------------------------
@@ -220,7 +206,6 @@ CREATE TABLE `Payments` (
   `invoice_id` int(11) DEFAULT NULL,
   `payment_method_id` int(11) DEFAULT NULL,
   `bank_id` int(11) DEFAULT NULL,
-  `amount` decimal(10,2) DEFAULT NULL,
   `payment_date` datetime DEFAULT NULL,
   `user_id` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -229,8 +214,8 @@ CREATE TABLE `Payments` (
 -- Dumping data for table `Payments`
 --
 
-INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_id`, `amount`, `payment_date`, `user_id`) VALUES
-(1, 1, 1, 1, 100.00, '2025-07-10 10:15:54', 1);
+INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_id`, `payment_date`, `user_id`) VALUES
+(1, 1, 1, 1, '2025-07-10 10:15:54', 1);
 
 -- --------------------------------------------------------
 
@@ -239,12 +224,6 @@ INSERT INTO `Payments` (`payment_id`, `invoice_id`, `payment_method_id`, `bank_i
 -- (See below for the actual view)
 --
 CREATE TABLE `Payment_Breakdown` (
-`invoice_id` int(11)
-,`customer_name` varchar(50)
-,`payment_method_id` int(11)
-,`amount` decimal(10,2)
-,`payment_date` datetime
-,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
@@ -255,8 +234,8 @@ CREATE TABLE `Payment_Breakdown` (
 
 CREATE TABLE `Products` (
   `product_id` int(11) NOT NULL,
-  `product_code` int(11) DEFAULT NULL,
   `product_name` varchar(100) DEFAULT NULL,
+  `product_code` int(11) DEFAULT NULL,
   `description` text DEFAULT NULL,
   `category_id` int(11) DEFAULT NULL,
   `brand_id` int(11) DEFAULT NULL,
@@ -269,9 +248,9 @@ CREATE TABLE `Products` (
 -- Dumping data for table `Products`
 --
 
-INSERT INTO `Products` (`product_id`, `product_code`, `product_name`, `description`, `category_id`, `brand_id`, `supplier_id`, `create_at`, `update_at`) VALUES
-(1, 1001, 'Pen', 'yohoo', 1, 1, 1, '2025-07-09 09:15:21', '2025-07-11 11:18:15'),
-(2, 1002, 'bolalo', 'food', 2, 2, 1, '2025-07-10 14:58:37', '2025-07-11 11:18:23');
+INSERT INTO `Products` (`product_id`, `product_name`, `product_code`, `description`, `category_id`, `brand_id`, `supplier_id`, `create_at`, `update_at`) VALUES
+(1, 'Pen', 1001, 'yohoo', 1, 1, 1, '2025-07-09 09:15:21', '2025-07-11 11:18:15'),
+(2, 'bolalo', 1002, 'food', 2, 2, 1, '2025-07-10 14:58:37', '2025-07-11 11:18:23');
 
 -- --------------------------------------------------------
 
@@ -418,7 +397,6 @@ CREATE TABLE `Sales` (
   `invoice_id` int(11) NOT NULL,
   `product_id` int(11) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
-  `unit_price` decimal(10,2) DEFAULT NULL,
   `create_at` datetime DEFAULT current_timestamp(),
   `update_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
@@ -427,9 +405,9 @@ CREATE TABLE `Sales` (
 -- Dumping data for table `Sales`
 --
 
-INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `unit_price`, `create_at`, `update_at`) VALUES
-(1, 1, 1, 2, 8.00, '2025-07-10 10:26:59', '2025-07-10 10:29:56'),
-(2, 1, 2, 20, 8.00, '2025-07-11 09:58:06', '2025-07-11 09:58:06');
+INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `create_at`, `update_at`) VALUES
+(1, 1, 1, 2, '2025-07-10 10:26:59', '2025-07-10 10:29:56'),
+(2, 1, 2, 20, '2025-07-11 09:58:06', '2025-07-11 09:58:06');
 
 -- --------------------------------------------------------
 
@@ -438,13 +416,6 @@ INSERT INTO `Sales` (`sales_id`, `invoice_id`, `product_id`, `quantity`, `unit_p
 -- (See below for the actual view)
 --
 CREATE TABLE `Sales_Summary` (
-`invoice_id` int(11)
-,`invoice_date` date
-,`product_name` varchar(100)
-,`quantity` int(11)
-,`unit_price` decimal(10,2)
-,`subtotal` decimal(20,2)
-,`username` varchar(225)
 );
 
 -- --------------------------------------------------------
