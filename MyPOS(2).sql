@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 12, 2025 at 12:31 PM
+-- Generation Time: Jul 21, 2025 at 04:20 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -545,7 +545,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Inventory_Status`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Inventory_Status`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`size` AS `size`, `pv`.`color` AS `color`, coalesce(sum(`rp`.`quantity`),0) AS `quantity_stock_in`, coalesce(sum(`s`.`quantity`),0) AS `sales_stock_out`, coalesce(sum(`rp`.`quantity`),0) - coalesce(sum(`s`.`quantity`),0) AS `quantity_on_hand`, max(`rp`.`received_date`) AS `last_restock_date` FROM (((`Products` `p` join `ProductVariants` `pv` on(`p`.`product_id` = `pv`.`product_id`)) left join `ReceiveProducts` `rp` on(`rp`.`product_id` = `pv`.`variant_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id`, `pv`.`size`, `pv`.`color` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Inventory_Status`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`size` AS `size`, `pv`.`color` AS `color`, coalesce(sum(`r`.`quantity`),0) AS `quantity_stock_in`, coalesce(sum(`s`.`quantity`),0) AS `sales_stock_out`, greatest(coalesce(sum(`r`.`quantity`),0) - coalesce(sum(`s`.`quantity`),0),0) AS `quantity_on_hand`, max(`r`.`received_date`) AS `last_restock_date` FROM (((`Products` `p` join `ProductVariants` `pv` on(`pv`.`product_id` = `p`.`product_id`)) left join `ReceiveProducts` `r` on(`r`.`product_id` = `p`.`product_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id`, `p`.`product_name`, `pv`.`size`, `pv`.`color` ;
 
 -- --------------------------------------------------------
 
@@ -563,7 +563,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Invoices_Total_Sales`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Invoices_Total_Sales`  AS SELECT `s`.`sales_id` AS `sales_id`, `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, `s`.`quantity`* `pv`.`base_price` AS `calculated_total_amount`, `i`.`amount_tendered` AS `total_paid`, `s`.`quantity`* `pv`.`base_price` - `i`.`amount_tendered` AS `balance`, CASE WHEN `i`.`amount_tendered` >= `s`.`quantity` * `pv`.`base_price` THEN 'Paid' WHEN `i`.`amount_tendered` > 0 THEN 'Partial' ELSE 'Unpaid' END AS `Payment_Status` FROM (((((`Invoices` `i` join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) join `ProductVariants` `pv` on(`s`.`variant_id` = `pv`.`variant_id`)) join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Invoices_Total_Sales`  AS SELECT `s`.`sales_id` AS `sales_id`, `i`.`invoice_id` AS `invoice_id`, `i`.`invoice_date` AS `invoice_date`, `c`.`customer_name` AS `customer_name`, `u`.`username` AS `username`, `s`.`quantity`* `pv`.`base_price` AS `calculated_total_amount`, `i`.`amount_tendered` AS `total_paid`, greatest(`s`.`quantity` * `pv`.`base_price` - `i`.`amount_tendered`,0) AS `balance`, CASE WHEN `i`.`amount_tendered` >= `s`.`quantity` * `pv`.`base_price` THEN 'Paid' WHEN `i`.`amount_tendered` > 0 THEN 'Partial' ELSE 'Unpaid' END AS `Payment_Status` FROM (((((`Invoices` `i` join `Sales` `s` on(`s`.`invoice_id` = `i`.`invoice_id`)) join `ProductVariants` `pv` on(`s`.`variant_id` = `pv`.`variant_id`)) join `Products` `p` on(`p`.`product_id` = `pv`.`product_id`)) join `Customers` `c` on(`c`.`customer_id` = `i`.`customer_id`)) join `Users` `u` on(`u`.`user_id` = `i`.`user_id`)) ;
 
 -- --------------------------------------------------------
 
@@ -775,7 +775,7 @@ ALTER TABLE `Payments`
 -- AUTO_INCREMENT for table `Products`
 --
 ALTER TABLE `Products`
-  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `product_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `ReceiveProducts`
