@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Jul 21, 2025 at 04:20 PM
+-- Generation Time: Jul 21, 2025 at 04:39 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -313,7 +313,7 @@ CREATE TABLE `Profit_For_Product` (
 ,`base_price` decimal(10,2)
 ,`ordered_quantity` int(11)
 ,`sold_quantity` decimal(32,0)
-,`total_cost` decimal(20,2)
+,`total_cost` decimal(42,2)
 ,`expected_sales` decimal(42,2)
 ,`total_profit` decimal(43,2)
 );
@@ -581,7 +581,7 @@ CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW 
 --
 DROP TABLE IF EXISTS `Profit_For_Product`;
 
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Profit_For_Product`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`cost_price` AS `cost_price`, `pv`.`base_price` AS `base_price`, `po`.`ordered_quantity` AS `ordered_quantity`, sum(coalesce(`s`.`quantity`,0)) AS `sold_quantity`, `pv`.`cost_price`* `po`.`ordered_quantity` AS `total_cost`, `pv`.`base_price`* sum(coalesce(`s`.`quantity`,0)) AS `expected_sales`, `pv`.`base_price`* sum(coalesce(`s`.`quantity`,0)) - `pv`.`cost_price` * `po`.`ordered_quantity` AS `total_profit` FROM (((`Products` `p` join `ProductVariants` `pv` on(`p`.`product_id` = `pv`.`product_id`)) left join `PurchaseOrderItems` `po` on(`po`.`product_id` = `pv`.`variant_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id` ;
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `Profit_For_Product`  AS SELECT `p`.`product_id` AS `product_id`, `p`.`product_name` AS `product_name`, `pv`.`cost_price` AS `cost_price`, `pv`.`base_price` AS `base_price`, `po`.`ordered_quantity` AS `ordered_quantity`, sum(coalesce(`s`.`quantity`,0)) AS `sold_quantity`, `pv`.`cost_price`* sum(coalesce(`s`.`quantity`,0)) AS `total_cost`, `pv`.`base_price`* sum(coalesce(`s`.`quantity`,0)) AS `expected_sales`, (`pv`.`base_price` - `pv`.`cost_price`) * sum(coalesce(`s`.`quantity`,0)) AS `total_profit` FROM (((`Products` `p` join `ProductVariants` `pv` on(`p`.`product_id` = `pv`.`product_id`)) left join `PurchaseOrderItems` `po` on(`po`.`product_id` = `pv`.`variant_id`)) left join `Sales` `s` on(`s`.`product_id` = `p`.`product_id`)) GROUP BY `p`.`product_id`, `p`.`product_name`, `pv`.`cost_price`, `pv`.`base_price`, `po`.`ordered_quantity` ;
 
 -- --------------------------------------------------------
 
